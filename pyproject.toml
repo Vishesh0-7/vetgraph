@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vetgraph"
-version = "0.1.1"
+version = "0.1.2"
 description = "Transform unstructured text into NetworkX knowledge graphs using LLMs"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -55,10 +55,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/vetgraph"
-Documentation = "https://github.com/yourusername/vetgraph#readme"
-Repository = "https://github.com/yourusername/vetgraph"
-Issues = "https://github.com/yourusername/vetgraph/issues"
+Homepage = "https://github.com/Vishesh0-7/vetgraph"
+Documentation = "https://github.com/Vishesh0-7/vetgraph#readme"
+Repository = "https://github.com/Vishesh0-7/vetgraph"
+Issues = "https://github.com/Vishesh0-7/vetgraph/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/vetgraph"]
