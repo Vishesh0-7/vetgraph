@@ -306,3 +306,7 @@ MIT License. See the [LICENSE](LICENSE) file for details.
 - **Author:** Vishesh Raju
 - **Email:** visheshinus@gmail.com
 - **GitHub:** [github.com/Vishesh0-7/vetgraph](https://github.com/Vishesh0-7/vetgraph)
+
+## Model naming
+
+Use `gemini-1.5-flash` consistently across docs and code.
