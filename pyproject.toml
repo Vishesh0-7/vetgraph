@@ -115,3 +115,4 @@ allowed_tags = [
 ]
 minor_tags = ["feat"]
 patch_tags = ["fix", "perf"]
+examples = ["python-dotenv>=1.0"]
