@@ -16,6 +16,11 @@ from pyvis.network import Network
 from networkx.readwrite import json_graph
 import instructor
 
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
+
 from vetgraph.schema import Triple, KnowledgeGraphExtraction
 
 
@@ -50,8 +55,10 @@ class VetGraph:
     
     def __init__(
         self,
-        client: instructor.Instructor,
+        client: Optional[instructor.Instructor] = None,
         model: Optional[str] = "gpt-4o-mini",
+        api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
     ):
         """
         Initialize VetGraph with an instructor-patched LLM client.
@@ -66,6 +73,18 @@ class VetGraph:
             VetGraph.from_anthropic(), VetGraph.from_ollama(), etc.
         """
         self.graph = nx.DiGraph()
+
+        self._legacy_openai_api = client is None and api_key is not None
+
+        if client is None:
+            if api_key is None:
+                raise ValueError("Either client or api_key must be provided")
+            if OpenAI is None:
+                raise ImportError(
+                    "OpenAI is not installed. Install it with: pip install 'vetgraph[openai]'"
+                )
+            client = OpenAI(api_key=api_key, base_url=base_url)
+
         self.client = client
         self.model = model
     
@@ -251,20 +270,40 @@ class VetGraph:
         """
         system_prompt = self._get_extraction_prompt(text, schema)
         
-        create_params = {
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Extract knowledge triples from the following text:\n\n{text}"}
-            ],
-            "response_model": KnowledgeGraphExtraction,
-        }
-        
-        # Only add model and temperature if model is set
-        if self.model is not None:
-            create_params["model"] = self.model
-            create_params["temperature"] = temperature
-        
-        extraction = self.client.chat.completions.create(**create_params)
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Extract knowledge triples from the following text:\n\n{text}"}
+        ]
+
+        if self._legacy_openai_api:
+            parse_params = {
+                "messages": messages,
+                "response_format": KnowledgeGraphExtraction,
+            }
+
+            if self.model is not None:
+                parse_params["model"] = self.model
+                parse_params["temperature"] = temperature
+
+            completion = self.client.beta.chat.completions.parse(**parse_params)
+
+            if completion is None:
+                raise ValueError("Failed to parse extraction from LLM response")
+
+            extraction = getattr(getattr(completion.choices[0], "message", None), "parsed", None)
+            if extraction is None:
+                raise ValueError("Failed to parse extraction from LLM response")
+        else:
+            create_params = {
+                "messages": messages,
+                "response_model": KnowledgeGraphExtraction,
+            }
+
+            if self.model is not None:
+                create_params["model"] = self.model
+                create_params["temperature"] = temperature
+
+            extraction = self.client.chat.completions.create(**create_params)
         
         if extraction is None:
             raise ValueError("Failed to parse extraction from LLM response")
