@@ -152,3 +152,4 @@ Thumbs.db
 *.jpg
 *.pdf
 knowledge_graph.html
+/create-issues.sh

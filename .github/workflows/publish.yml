@@ -1,0 +1,53 @@
+name: Release and Publish
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run test suite
+        run: pytest tests/ -v
+
+      - name: Run semantic release (version, tag, changelog, GitHub Release)
+        id: semantic_release
+        uses: python-semantic-release/python-semantic-release@v9.15.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build package
+        if: steps.semantic_release.outputs.released == 'true'
+        run: python -m build
+
+      - name: Publish to PyPI with twine
+        if: steps.semantic_release.outputs.released == 'true'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: python -m twine upload dist/*
+
+      - name: No release generated
+        if: steps.semantic_release.outputs.released != 'true'
+        run: echo "No publishable commits since last release. Skipping build and PyPI upload."
