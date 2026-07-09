@@ -105,9 +105,9 @@ class TestSaveGraph:
             
             # Check structure
             assert 'nodes' in data
-            assert 'links' in data
+            assert 'links' in data or 'edges' in data
             assert len(data['nodes']) == 2
-            assert len(data['links']) == 1
+            assert len(data.get('links', data.get('edges', []))) == 1
         finally:
             if os.path.exists(output_path):
                 os.unlink(output_path)

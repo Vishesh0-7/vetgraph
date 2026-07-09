@@ -268,7 +268,7 @@ class VetGraph:
         Raises:
             ValueError: If the API call fails or extraction returns invalid data
         """
-        system_prompt = self._get_extraction_prompt(text, schema)
+        system_prompt = self._get_extraction_prompt(text, schema=schema)
         
         messages = [
             {"role": "system", "content": system_prompt},
@@ -290,7 +290,10 @@ class VetGraph:
             if completion is None:
                 raise ValueError("Failed to parse extraction from LLM response")
 
-            extraction = getattr(getattr(completion.choices[0], "message", None), "parsed", None)
+            if isinstance(completion, KnowledgeGraphExtraction):
+                extraction = completion
+            else:
+                extraction = getattr(getattr(completion.choices[0], "message", None), "parsed", None)
             if extraction is None:
                 raise ValueError("Failed to parse extraction from LLM response")
         else:
