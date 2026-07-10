@@ -310,3 +310,5 @@ MIT License. See the [LICENSE](LICENSE) file for details.
 ## Model naming
 
 Use `gemini-1.5-flash` consistently across docs and code.
+
+Model naming: [docs/model-names.md](docs/model-names.md).
