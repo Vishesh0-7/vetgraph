@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vetgraph"
-version = "1.0.0"
+version = "1.0.1"
 description = "Transform unstructured text into NetworkX knowledge graphs using LLMs"
 readme = "README.md"
 requires-python = ">=3.8"
